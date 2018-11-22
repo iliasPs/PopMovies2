@@ -73,7 +73,7 @@ public class MovieDetailActivity extends AppCompatActivity  {
 
 
 
-    public static final String EXTRA_MOVIE_ID = "extraMovieId";
+    public static final String EXTRA_MOVIE = "MOVIE";
     public static final String INSTANCE_MOVIE_ID = "instanceMovieId";
     private static final int DEFAULT_MOVIE_ID = -1;
     private int mMovieId = DEFAULT_MOVIE_ID;
@@ -88,7 +88,7 @@ public class MovieDetailActivity extends AppCompatActivity  {
         setContentView(R.layout.activity_movie_detail);
         Log.d(LOG_TAG, "activity created again ");
 
-        mDb = AppDatabase.getInstance(getApplication().getApplicationContext());
+        mDb = AppDatabase.getInstance(getApplicationContext());
 
         mToolbar = findViewById(R.id.toolbar);
         mToolbar.setTitle(R.string.movie_details_title);
@@ -99,16 +99,18 @@ public class MovieDetailActivity extends AppCompatActivity  {
         }
 
         Intent i = getIntent();
-        if (i !=null && i.hasExtra(EXTRA_MOVIE_ID)) {
 
+        if (i !=null && i.hasExtra(EXTRA_MOVIE)) {
             if (mMovieId == DEFAULT_MOVIE_ID){
+                mMovieId = i.getIntExtra(EXTRA_MOVIE, DEFAULT_MOVIE_ID);
             final LiveData<Movie> movieData = mDb.movieDao().loadMovieById(mMovieId);
-            Log.d(LOG_TAG, " " + movieData);
+                Log.d(LOG_TAG, "movie received " + movieData);
+                mMovie = i.getParcelableExtra(EXTRA_MOVIE);
 
-            Movie movieViewedInDetails = movieData.getValue();
-            mMovie = new Movie( movieViewedInDetails.getTitle(), movieViewedInDetails.getReleaseDate(),
-                    movieViewedInDetails.getMoviePoster(), movieViewedInDetails.getAvgVote(), movieViewedInDetails.getPlot(), movieViewedInDetails.getMovieId());
+//            Movie movieViewedInDetails = movieData.getValue();
 
+//                mMovie = new Movie( movieViewedInDetails.getTitle(), movieViewedInDetails.getReleaseDate(),
+//                        movieViewedInDetails.getMoviePoster(), movieViewedInDetails.getAvgVote(), movieViewedInDetails.getPlot(), movieViewedInDetails.getMovieId());
 
             movieData.observe(this, new Observer<Movie>() {
                 @Override
@@ -116,7 +118,7 @@ public class MovieDetailActivity extends AppCompatActivity  {
                     movieData.removeObserver(this);
                     Log.d(LOG_TAG, "Receiving database update from LiveData");
                     populateUI(movie);
-                    isMovieInFavorites(mMovie.getId());
+                    isMovieInFavorites(movie.getId());
 
                 }
             });
@@ -215,6 +217,8 @@ public class MovieDetailActivity extends AppCompatActivity  {
 
 
     private class PopulateReviewsAndVideosTask extends AsyncTask<URL, Void, String> {
+
+
 
         @Override
         protected String doInBackground(URL... urls) {

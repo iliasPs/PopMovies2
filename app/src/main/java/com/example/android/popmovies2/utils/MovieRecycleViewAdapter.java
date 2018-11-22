@@ -82,7 +82,7 @@ public class MovieRecycleViewAdapter extends RecyclerView.Adapter<MovieRecycleVi
             int clickedPosition = getAdapterPosition();
             Intent i = new Intent(context, MovieDetailActivity.class);
            Movie movie = mMovies.get(clickedPosition);
-            i.putExtra(MovieDetailActivity.EXTRA_MOVIE_ID, movie);
+            i.putExtra(MovieDetailActivity.EXTRA_MOVIE, movie);
             context.startActivity(i);
 
 

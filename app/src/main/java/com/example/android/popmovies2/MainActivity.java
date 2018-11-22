@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
 //    public void onListItemClick(int clickedItemIndex) {
 //        Log.d(LOG_TAG, "click");
 //        Intent i = new Intent(MainActivity.this, MovieDetailActivity.class);
-//            i.putExtra(MovieDetailActivity.EXTRA_MOVIE_ID, clickedItemIndex);
+//            i.putExtra(MovieDetailActivity.EXTRA_MOVIE, clickedItemIndex);
 //            startActivity(i);
 //    }
 
@@ -143,8 +143,5 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    @Override
-//    public void onListItemClick(int clickedItemIndex) {
-//
-//    }
+
 }
