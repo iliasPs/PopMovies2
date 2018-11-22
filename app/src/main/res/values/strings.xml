@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="no_data">No data available</string>
+    <string name="movie_details_title">Movie Details</string>
+    <string name="title"><u>Title: </u></string>
+    <string name="release"><u>Release Date: </u></string>
+    <string name="average"><u>Average Vote: </u></string>
+    <string name="plot"><u>Plot Synopsis: </u></string>
+    <string-array name="userPrefs">
+        <item>Most Popular</item>
+        <item>Highest Rated</item>
+        <item>Favorites</item>
+    </string-array>
+
+    <string name="author_name">Review Author</string>
+    <string name="review_content">Review Content</string>
+    <string name="reviewLabelExist"><u>User Reviews: (Click to expand)</u></string>
+    <string name="reviewLabelNone">User Reviews: None yet...</string>
+    <string name="addFavorite">Add to favorites</string>
+    <string name="removeFavorites">Remove from Favorites</string>
+    <string name="addedToFavorites">Added to favorites</string>
+    <string name="alreadytoFavs">Already added to favorites!</string>
+
+
+</resources>
