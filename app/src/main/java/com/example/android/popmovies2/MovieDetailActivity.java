@@ -1,6 +1,7 @@
 package com.example.android.popmovies2;
 
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -35,7 +36,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class MovieDetailActivity extends AppCompatActivity {
+public class MovieDetailActivity extends AppCompatActivity  {
 
     private static final String LOG_TAG = MovieDetailActivity.class.getSimpleName();
     @BindView(R.id.movieTitle)
@@ -49,7 +50,7 @@ public class MovieDetailActivity extends AppCompatActivity {
     @BindView(R.id.moviePoster)
     ImageView moviePosterIv;
     Toolbar mToolbar;
-    Movie movieData;
+
     @Nullable
     @BindView(R.id.rv_movieReviews)
     RecyclerView mReviewList;
@@ -68,8 +69,18 @@ public class MovieDetailActivity extends AppCompatActivity {
     private List<Review> mReviews;
     private MovieReviewsRecyclerViewAdapter mAdapter;
     private AppDatabase mDb;
+    Movie mMovie;
+
+
+
+    public static final String EXTRA_MOVIE_ID = "extraMovieId";
+    public static final String INSTANCE_MOVIE_ID = "instanceMovieId";
+    private static final int DEFAULT_MOVIE_ID = -1;
+    private int mMovieId = DEFAULT_MOVIE_ID;
+
+
+
     private boolean isinFavsAlready;
-    Movie movie;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,34 +88,65 @@ public class MovieDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_movie_detail);
         Log.d(LOG_TAG, "activity created again ");
 
-
+        mDb = AppDatabase.getInstance(getApplication().getApplicationContext());
 
         mToolbar = findViewById(R.id.toolbar);
         mToolbar.setTitle(R.string.movie_details_title);
         ButterKnife.bind(this);
 
-        Intent i = getIntent();
-        if (i.hasExtra(Intent.EXTRA_TEXT)) {
-            movieData = (Movie) i.getParcelableExtra(i.EXTRA_TEXT);
-
-            Picasso.with(this)
-                    .load(movieData.getMoviePoster())
-                    .into(moviePosterIv);
-
-            movieTitleTv.setText(movieData.getTitle());
-            movieReleaseDateTv.setText(movieData.getReleaseDate());
-            movieAvgTv.setText(movieData.getAvgVote());
-            moviePlotTv.setText(movieData.getPlot());
+        if (savedInstanceState != null && savedInstanceState.containsKey(INSTANCE_MOVIE_ID)) {
+            mMovieId = savedInstanceState.getInt(INSTANCE_MOVIE_ID, DEFAULT_MOVIE_ID);
         }
 
-        movie = getIntent().getParcelableExtra("movie");
+        Intent i = getIntent();
+        if (i !=null && i.hasExtra(EXTRA_MOVIE_ID)) {
+
+            if (mMovieId == DEFAULT_MOVIE_ID){
+            final LiveData<Movie> movieData = mDb.movieDao().loadMovieById(mMovieId);
+            Log.d(LOG_TAG, " " + movieData);
+
+            Movie movieViewedInDetails = movieData.getValue();
+            mMovie = new Movie( movieViewedInDetails.getTitle(), movieViewedInDetails.getReleaseDate(),
+                    movieViewedInDetails.getMoviePoster(), movieViewedInDetails.getAvgVote(), movieViewedInDetails.getPlot(), movieViewedInDetails.getMovieId());
+
+
+            movieData.observe(this, new Observer<Movie>() {
+                @Override
+                public void onChanged(@Nullable Movie movie) {
+                    movieData.removeObserver(this);
+                    Log.d(LOG_TAG, "Receiving database update from LiveData");
+                    populateUI(movie);
+                    isMovieInFavorites(mMovie.getId());
+
+                }
+            });
+            }
+        }
+
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         mReviewList.setLayoutManager(linearLayoutManager);
 
-        isMovieInFavorites(movieData.getId());
+
         favoritesButtons(favoritesRG);
         PopulateReviewsAndVideosTask task = new PopulateReviewsAndVideosTask();
         task.execute();
+    }
+
+    private void populateUI(Movie movie) {
+        Picasso.with(this)
+                .load(movie.getMoviePoster())
+                .into(moviePosterIv);
+
+        movieTitleTv.setText(movie.getTitle());
+        movieReleaseDateTv.setText(movie.getReleaseDate());
+        movieAvgTv.setText(movie.getAvgVote());
+        moviePlotTv.setText(movie.getPlot());
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt(INSTANCE_MOVIE_ID, mMovieId);
+        super.onSaveInstanceState(outState);
     }
 
     public void showReviews(View v) {
@@ -114,14 +156,13 @@ public class MovieDetailActivity extends AppCompatActivity {
     }
 
     public boolean isMovieInFavorites(int id) {
-        mDb = AppDatabase.getInstance(getApplication().getApplicationContext());
-        LiveData<Integer> dbMovieID = mDb.movieDao().searchForFavorite(id);
+        LiveData<Movie> dbMovieID = mDb.movieDao().loadMovieById(id);
         dbMovieID.observe(this, movieID -> {
                     if (movieID != null) {
                         addToFavsRB.setChecked(true);
                         isinFavsAlready = true;
-                    } else {
-                        removeFavsRB.setChecked(false);
+                    } else if(movieID == null) {
+                        addToFavsRB.setChecked(false);
                         isinFavsAlready = false;
 
                     }
@@ -137,14 +178,16 @@ public class MovieDetailActivity extends AppCompatActivity {
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
                 switch (i) {
                     case R.id.addFavorite:
+                        Log.d(LOG_TAG, "isInFavs" + isinFavsAlready);
                         if (!isinFavsAlready) {
                             AppExecutors.getInstance().diskIO().execute(new Runnable() {
                                 @Override
                                 public void run() {
-                                    mDb.movieDao().insertMovie(movieData);
+
+                                    mDb.movieDao().insertMovie(mMovie);
                                 }
                             });
-                            Log.d(LOG_TAG, "Adding movie in favs " + movieData.getTitle());
+                            Log.d(LOG_TAG, "Adding movie in favs " + mMovie.getTitle());
                             Toast.makeText(getApplication().getApplicationContext(), getResources().getString(R.string.addedToFavorites), Toast.LENGTH_LONG).show();
                             break;}
                          else {
@@ -153,12 +196,14 @@ public class MovieDetailActivity extends AppCompatActivity {
                         }
                     case R.id.removeFavorite:
                         AppExecutors.getInstance().diskIO().execute(new Runnable() {
+
                             @Override
                             public void run() {
-                                mDb.movieDao().deleteMovie(movieData);
+                                mDb.movieDao().deleteMovie(mMovie);
+                                Log.d(LOG_TAG, "Removing movie from favs " + mMovie.getTitle());
+
                             }
                         });
-                        Log.d(LOG_TAG, "Removing movie from fabs" + movieData.getTitle());
                         Toast.makeText(getApplication().getApplicationContext(), getResources().getString(R.string.removeFavorites), Toast.LENGTH_LONG).show();
                         break;
                 }
@@ -167,11 +212,13 @@ public class MovieDetailActivity extends AppCompatActivity {
     }
 
 
+
+
     private class PopulateReviewsAndVideosTask extends AsyncTask<URL, Void, String> {
 
         @Override
         protected String doInBackground(URL... urls) {
-            URL searchReviewUrl = NetworkUtils.createReviewsUrl(movieData.getMovieId());
+            URL searchReviewUrl = NetworkUtils.createReviewsUrl(mMovie.getMovieId());
             String jsonString = "";
             try {
                 jsonString = NetworkUtils.makeHttpRequest(searchReviewUrl);
@@ -201,6 +248,9 @@ public class MovieDetailActivity extends AppCompatActivity {
             }
         }
     }
+
+
+
 
 
 

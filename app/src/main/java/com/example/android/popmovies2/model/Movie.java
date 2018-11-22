@@ -100,7 +100,6 @@ public class Movie implements Parcelable {
         this.movieId = movieId;
     }
 
-
     protected Movie(Parcel in) {
         title = in.readString();
         releaseDate = in.readString();
@@ -137,5 +136,4 @@ public class Movie implements Parcelable {
             return new Movie[size];
         }
     };
-
 }

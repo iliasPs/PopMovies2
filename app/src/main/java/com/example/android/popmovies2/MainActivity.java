@@ -1,7 +1,8 @@
 package com.example.android.popmovies2;
 
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -19,6 +20,7 @@ import android.widget.Toolbar;
 import com.example.android.popmovies2.database.AppDatabase;
 import com.example.android.popmovies2.model.Movie;
 import com.example.android.popmovies2.utils.JsonUtils;
+import com.example.android.popmovies2.utils.MainViewModel;
 import com.example.android.popmovies2.utils.MovieRecycleViewAdapter;
 import com.example.android.popmovies2.utils.NetworkUtils;
 
@@ -34,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
+    Context mContext;
     Toolbar mToolBar;
     @BindView(R.id.prefSpinnner)
     Spinner prefSpinner;
@@ -73,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
                 PopulateMoviesTask newTask = new PopulateMoviesTask();
                 newTask.execute();}
                 else{
-                    retrieveMovies();
+                    setUpViewModel();
                 }
             }
 
@@ -90,18 +93,26 @@ public class MainActivity extends AppCompatActivity {
         mMoviesList.setHasFixedSize(true);
     }
 
-    private void retrieveMovies(){
-        Log.d(LOG_TAG, "Actively retrieving movies from the database");
-        final LiveData<List<Movie>> movies = mDb.movieDao().loadAllMovies();
-        movies.observe(this, new Observer<List<Movie>>() {
+    private void setUpViewModel(){
+        MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        viewModel.getMovies().observe(this, new Observer<List<Movie>>() {
             @Override
             public void onChanged(@Nullable List<Movie> movies) {
-                Log.d(LOG_TAG, "Receiving db update from livedata");
+                Log.d(LOG_TAG, "updating list of movies from livedata in viewmodel");
                 mAdapter.setMovies(movies);
             }
         });
 
     }
+
+
+//    @Override
+//    public void onListItemClick(int clickedItemIndex) {
+//        Log.d(LOG_TAG, "click");
+//        Intent i = new Intent(MainActivity.this, MovieDetailActivity.class);
+//            i.putExtra(MovieDetailActivity.EXTRA_MOVIE_ID, clickedItemIndex);
+//            startActivity(i);
+//    }
 
     private class PopulateMoviesTask extends AsyncTask<URL, Void, String> {
 
@@ -127,12 +138,13 @@ public class MainActivity extends AppCompatActivity {
                 noDataTv.setVisibility(View.GONE);
                 mMovies = JsonUtils.extractFeatureFromJson(jsonString);
             }
-            mAdapter = new MovieRecycleViewAdapter(MainActivity.this, mMovies, new MovieRecycleViewAdapter.ListItemClickListener() {
-                @Override
-                public void onListItemClick(int clickedItemIndex) {
-                }
-            });
+            mAdapter = new MovieRecycleViewAdapter(MainActivity.this, mMovies);
            mMoviesList.setAdapter(mAdapter);
         }
     }
+
+//    @Override
+//    public void onListItemClick(int clickedItemIndex) {
+//
+//    }
 }

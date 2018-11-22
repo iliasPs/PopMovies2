@@ -21,18 +21,13 @@ public class MovieRecycleViewAdapter extends RecyclerView.Adapter<MovieRecycleVi
 
     private List<Movie> mMovies;
 
-    final private ListItemClickListener mOnClickListener;
-    private Context mContext;
-    /**
-     * The interface that receives onClick messages.
-     */
-    public interface ListItemClickListener {
-        void onListItemClick(int clickedItemIndex);
-    }
 
-    public MovieRecycleViewAdapter(Context c, List<Movie> myMovieData, ListItemClickListener listener) {
+
+    private Context mContext;
+
+
+    public MovieRecycleViewAdapter(Context c, List<Movie> myMovieData) {
         mContext = c;
-        mOnClickListener = listener;
         mMovies =myMovieData;
     }
 
@@ -83,12 +78,15 @@ public class MovieRecycleViewAdapter extends RecyclerView.Adapter<MovieRecycleVi
 
         @Override
         public void onClick(View v) {
+            Context context = v.getContext();
             int clickedPosition = getAdapterPosition();
-            mOnClickListener.onListItemClick(clickedPosition);
+            Intent i = new Intent(context, MovieDetailActivity.class);
+           Movie movie = mMovies.get(clickedPosition);
+            i.putExtra(MovieDetailActivity.EXTRA_MOVIE_ID, movie);
+            context.startActivity(i);
 
-            Intent i = new Intent(mContext, MovieDetailActivity.class);
-            i.putExtra(Intent.EXTRA_TEXT, mMovies.get(clickedPosition));
-            mContext.startActivity(i);
+
+
         }
     }
 
