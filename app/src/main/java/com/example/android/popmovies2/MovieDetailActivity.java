@@ -106,7 +106,7 @@ public class MovieDetailActivity extends AppCompatActivity  {
             final LiveData<Movie> movieData = mDb.movieDao().loadMovieById(mMovieId);
                 Log.d(LOG_TAG, "movie received " + movieData);
                 mMovie = i.getParcelableExtra(EXTRA_MOVIE);
-
+//ASDASDF//
 //            Movie movieViewedInDetails = movieData.getValue();
 
 //                mMovie = new Movie( movieViewedInDetails.getTitle(), movieViewedInDetails.getReleaseDate(),
