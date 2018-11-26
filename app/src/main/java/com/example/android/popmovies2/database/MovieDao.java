@@ -16,11 +16,17 @@ public interface MovieDao {
     @Query("SELECT * FROM moviesTable ORDER BY id")
     LiveData<List<Movie>> loadAllMovies();
 
-    @Query("SELECT id FROM moviesTable WHERE id = :id")
+    @Query("SELECT * FROM moviesTable WHERE id = :id")
     LiveData<Movie> loadMovieById(int id);
+
+    @Query("SELECT id FROM moviesTable WHERE movieId = :movieID")
+    LiveData<Integer> searchFavsByMovieID(int movieID);
 
     @Insert
     void insertMovie(Movie movie);
+
+    @Query("DELETE FROM moviesTable WHERE movieId = :movieID")
+    void deleteByID(int movieID);
 
     @Delete
     void deleteMovie(Movie movie);

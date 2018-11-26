@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="eight_dp">8dp</dimen>
+    <dimen name="four_dp">4dp</dimen>
+    <dimen name="card_title_text_size">18sp</dimen>
+    <dimen name="card_text_padding_vertical">4dp</dimen>
+    <dimen name="spinner_margin">10dp</dimen>
+    <dimen name="poster_margin">24dp</dimen>
+    <dimen name="reviews_rv_margin">16dp</dimen>
+    <dimen name="fake_views_height">200dp</dimen>
+    <dimen name="review_label_margin">16dp</dimen>
+    <dimen name="review_content_margin">24dp</dimen>
+
+</resources>

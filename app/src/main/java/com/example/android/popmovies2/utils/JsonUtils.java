@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.example.android.popmovies2.model.Movie;
 import com.example.android.popmovies2.model.Review;
+import com.example.android.popmovies2.model.Trailer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -80,6 +81,31 @@ public class JsonUtils {
             Log.e("QueryUtils", "Problem parsing the news JSON results", e);
         }
         return reviews;
+    }
+
+    public static ArrayList<Trailer> extractTrailersFromJson(String trailersJson) {
+        if (TextUtils.isEmpty(trailersJson)) {
+            return null;
+        }
+        ArrayList<Trailer> trailers = new ArrayList<>();
+        try {
+
+            JSONObject baseJsonResponse = new JSONObject(trailersJson);
+            JSONArray trailersArray = baseJsonResponse.getJSONArray("results");
+            for (int i = 0; i < trailersArray.length(); i++) {
+
+                JSONObject currentTrailer = trailersArray.getJSONObject(i);
+                String currentTrailerID = currentTrailer.getString("id");
+                String currentTrailerKey = currentTrailer.getString("key");
+                String currentTrailerName = currentTrailer.getString("name");
+
+
+                trailers.add(new Trailer(currentTrailerID, currentTrailerKey, currentTrailerName));
+            }
+        } catch (JSONException e) {
+            Log.e("QueryUtils", "Problem parsing the news JSON results", e);
+        }
+        return trailers;
     }
 
     /**

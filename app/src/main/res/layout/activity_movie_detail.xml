@@ -29,64 +29,41 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-
+            android:layout_marginLeft="@dimen/eight_dp"
+            android:layout_marginRight="@dimen/four_dp"
             android:orientation="vertical"
             app:layout_constraintTop_toBottomOf="@id/toolbar">
 
-            <ImageView
-                android:id="@+id/moviePoster"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:contentDescription="moviePoster"
-                app:layout_constraintTop_toTopOf="@id/toolbar"
-                app:srcCompat="@android:drawable/alert_dark_frame" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/moviePoster"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/poster_margin"
+                    android:layout_weight="1"
+                    android:contentDescription="moviePoster"
+                    app:layout_constraintTop_toTopOf="@id/toolbar"
+                    app:srcCompat="@android:drawable/alert_dark_frame" />
+
+                <include
+                    layout="@layout/movie_details"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="right"
+                    android:layout_marginTop="@dimen/poster_margin"
+                    android:layout_weight="1" />
+
+
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="@string/title"
-                android:textColor="@android:color/white" />
-
-            <TextView
-                android:id="@+id/movieTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@android:color/white" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/release"
-                android:textColor="@android:color/white" />
-
-            <TextView
-                android:id="@+id/movieReleaseDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@android:color/white" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/average"
-                android:textColor="@android:color/white" />
-
-            <TextView
-                android:id="@+id/movieAvg"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@android:color/white" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:gravity="center"
                 android:text="@string/plot"
                 android:textColor="@android:color/white" />
 
@@ -94,42 +71,24 @@
                 android:id="@+id/moviePlot"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:textColor="@android:color/white" />
 
-            <RadioGroup
-                android:id="@+id/favoritesRadioGroup"
-                android:layout_width="match_parent"
+
+            <include
+                android:id="@+id/trailerGroup"
+                layout="@layout/trailer_recycler_view"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:weightSum="2">
+                android:layout_gravity="right"
+                android:layout_weight="2" />
 
-                <RadioButton
-                    android:id="@+id/addFavorite"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/addFavorite"
-                    android:layout_weight="1"
-                    android:textColor="@android:color/white"
-                    />
-
-                <RadioButton
-                    android:id="@+id/removeFavorite"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/removeFavorites"
-                    android:layout_weight="1"
-
-                    android:textColor="@android:color/white" />
-
-
-            </RadioGroup>
 
             <TextView
                 android:id="@+id/reviewLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="@dimen/eight_dp"
                 android:onClick="showReviews"
                 android:textColor="@android:color/white" />
 
@@ -137,22 +96,21 @@
             <View
                 android:id="@+id/fakeView"
                 android:layout_width="match_parent"
-                android:layout_height="200dp" />
+                android:layout_height="@dimen/fake_views_height" />
 
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv_movieReviews"
                 android:layout_width="match_parent"
-
                 android:layout_height="wrap_content"
-                android:paddingBottom="16dp">
+                android:paddingBottom="@dimen/reviews_rv_margin">
 
             </android.support.v7.widget.RecyclerView>
 
             <View
                 android:id="@+id/fakeView2"
                 android:layout_width="match_parent"
-                android:layout_height="200dp" />
+                android:layout_height="@dimen/fake_views_height" />
         </LinearLayout>
     </ScrollView>
 </android.support.constraint.ConstraintLayout>

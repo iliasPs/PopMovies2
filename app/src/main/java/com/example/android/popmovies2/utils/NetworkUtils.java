@@ -49,7 +49,6 @@ public class NetworkUtils {
         try {
             url = new URL(builtUri.toString());
         } catch (MalformedURLException e) {
-            Log.d(LOG_TAG, "url is " + url);
             Log.e(LOG_TAG, "Problem building the URL ", e);
         }
         return url;
@@ -84,6 +83,7 @@ public class NetworkUtils {
         URL url = null;
         try {
             url = new URL(builtUri.toString());
+            Log.d(LOG_TAG, "url " + url);
         } catch (MalformedURLException e) {
             Log.e(LOG_TAG, "Problem building the URL ", e);
         }

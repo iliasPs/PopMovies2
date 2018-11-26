@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/background"
     tools:context=".MainActivity">
 
 
@@ -23,8 +24,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
-            android:layout_marginEnd="10dp"
-            android:layout_marginRight="10dp"
+            android:layout_marginEnd="@dimen/spinner_margin"
+            android:layout_marginRight="@dimen/spinner_margin"
             app:popupTheme="@color/background"
             app:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 

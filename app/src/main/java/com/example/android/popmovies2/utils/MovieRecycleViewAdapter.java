@@ -46,7 +46,7 @@ public class MovieRecycleViewAdapter extends RecyclerView.Adapter<MovieRecycleVi
     @Override
     public void onBindViewHolder(@NonNull MovieRecycleViewAdapter.MoviesViewHolder holder, int position) {
         Movie movie = this.mMovies.get(position);
-        Picasso.with(mContext)
+        Picasso.get()
                 .load(movie.getMoviePoster())
                 .placeholder(R.drawable.ic_launcher_background)
                 .error(R.drawable.ic_launcher_foreground)
@@ -72,7 +72,7 @@ public class MovieRecycleViewAdapter extends RecyclerView.Adapter<MovieRecycleVi
             super(itemView);
 
             moviePosterIv = itemView.findViewById(R.id.moviePoster);
-            movieTitleTv = itemView.findViewById(R.id.movieTitle);
+            movieTitleTv = itemView.findViewById(R.id.movieTitleListItem);
             itemView.setOnClickListener(this);
         }
 

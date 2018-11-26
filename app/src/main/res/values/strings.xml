@@ -21,5 +21,9 @@
     <string name="addedToFavorites">Added to favorites</string>
     <string name="alreadytoFavs">Already added to favorites!</string>
 
+    <string name="vote_max">/10</string>
+
+    <string name="trailerHeader">Trailers</string>
+    <string name="trailersNA">No Trailers Available</string>
 
 </resources>
