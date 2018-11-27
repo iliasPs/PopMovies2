@@ -18,6 +18,7 @@
         app:titleTextColor="@android:color/white" />
 
     <ScrollView
+        android:id="@+id/mainScrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fillViewport="true"
@@ -84,14 +85,14 @@
                 android:layout_weight="2" />
 
 
-            <TextView
+            <Switch
                 android:id="@+id/reviewLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/eight_dp"
-                android:onClick="showReviews"
                 android:textColor="@android:color/white" />
 
+            <!--android:onClick="showReviews"-->
 
             <View
                 android:id="@+id/fakeView"

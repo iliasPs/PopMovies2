@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 import android.widget.Toolbar;
@@ -39,6 +40,8 @@ import butterknife.ButterKnife;
 public class MovieDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_MOVIE = "MOVIE";
+    public static final String REVIEW_BUTTON = "reviews";
+    public static final String IS_IN_FAVORITES = "isInFavorites";
     public static final String INSTANCE_MOVIE_ID = "instanceMovieId";
     private static final String LOG_TAG = MovieDetailActivity.class.getSimpleName();
     private static final int DEFAULT_MOVIE_ID = -1;
@@ -53,6 +56,8 @@ public class MovieDetailActivity extends AppCompatActivity {
     @BindView(R.id.moviePoster)
     ImageView moviePosterIv;
     Toolbar mToolbar;
+    @BindView(R.id.reviewLabel)
+    Switch reviewSwitch;
     @Nullable
     @BindView(R.id.rv_movieReviews)
     RecyclerView mReviewList;
@@ -61,8 +66,7 @@ public class MovieDetailActivity extends AppCompatActivity {
     RecyclerView mTrailersList;
     @BindView(R.id.fakeView)
     View fakeView;
-    @BindView(R.id.reviewLabel)
-    TextView reviewLabel;
+
     @BindView(R.id.fakeView2)
     View fakeView2;
     Movie mMovie;
@@ -76,9 +80,12 @@ public class MovieDetailActivity extends AppCompatActivity {
     private MovieReviewsRecyclerViewAdapter mAdapter;
     private AppDatabase mDb;
     private int mMovieId = DEFAULT_MOVIE_ID;
+    static int scrollTrailerPosition=0;
+    static int scrollReviewPosition =0;
 
 
     private boolean isInFavsAlready;
+    private boolean isReviewButtonClicked;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +98,17 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         if (savedInstanceState != null && savedInstanceState.containsKey(INSTANCE_MOVIE_ID)) {
             mMovieId = savedInstanceState.getInt(INSTANCE_MOVIE_ID, DEFAULT_MOVIE_ID);
+
         }
+        if(savedInstanceState !=null && savedInstanceState.containsKey(IS_IN_FAVORITES)){
+            isInFavsAlready = savedInstanceState.getBoolean(IS_IN_FAVORITES, false);
+        }
+        if(savedInstanceState !=null && savedInstanceState.containsKey(REVIEW_BUTTON)){
+            isReviewButtonClicked = savedInstanceState.getBoolean(REVIEW_BUTTON, false);
+
+        }
+        Log.d(LOG_TAG, "review button   " + isReviewButtonClicked);
+
 
         Intent i = getIntent();
 
@@ -103,14 +120,35 @@ public class MovieDetailActivity extends AppCompatActivity {
 
             }
         }
-
         setTrailers();
         setReviews();
+
+
+        if (isReviewButtonClicked) {
+            showReviews();
+        }
         int movieID = Integer.parseInt(mMovie.getMovieId());
         isMovieInFavorites(movieID);
+        reviewSwitch.setOnCheckedChangeListener(new ShowReviewsListener());
         favoriteToggle.setOnCheckedChangeListener(new FavoriteListener());
 
     }
+
+//    public void SaveButtonState(String buttonState){
+//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MovieDetailActivity.this);
+//        SharedPreferences.Editor edit = sharedPreferences.edit();
+//        edit.putString("button value", buttonState);
+//        Log.d(LOG_TAG, "buttonSTATE after saveButton called " + buttonState);
+//
+//        edit.commit();
+//    }
+//
+//    public String LoadButtonState(){
+//        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+//        String buttonState = preferences.getString("button value", "DEFAULT");
+//        Log.d(LOG_TAG, "state of button on LoadButtonState " + buttonState);
+//        return buttonState;
+//    }
 
     private void setReviews() {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -140,10 +178,35 @@ public class MovieDetailActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putInt(INSTANCE_MOVIE_ID, mMovieId);
+        outState.putBoolean(IS_IN_FAVORITES, isInFavsAlready);
+        outState.putBoolean(REVIEW_BUTTON, isReviewButtonClicked);
         super.onSaveInstanceState(outState);
     }
 
-    public void showReviews(View v) {
+    @Override
+    protected void onPause() {
+        scrollReviewPosition = ((LinearLayoutManager) mReviewList.getLayoutManager()).findFirstVisibleItemPosition();
+        scrollTrailerPosition = ((LinearLayoutManager) mTrailersList.getLayoutManager()).findLastCompletelyVisibleItemPosition();
+
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        ((LinearLayoutManager) mReviewList.getLayoutManager()).scrollToPosition(scrollReviewPosition);
+        ((LinearLayoutManager) mTrailersList.getLayoutManager()).scrollToPosition(scrollTrailerPosition);
+        int movieID = Integer.parseInt(mMovie.getMovieId());
+        if(isMovieInFavorites(movieID)){
+            isInFavsAlready = true;
+        }else {
+            isInFavsAlready = false;
+        }
+        super.onResume();
+
+    }
+
+
+    public void showReviews() {
         mReviewList.setHasFixedSize(true);
         mReviewList.setVisibility(View.VISIBLE);
         fakeView2.setVisibility(View.VISIBLE);
@@ -153,6 +216,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         LiveData<Integer> dbMovieID = mDb.movieDao().searchFavsByMovieID(id);
         dbMovieID.observe(this, movieID -> {
                      if (movieID != null) {
+                         Log.d(LOG_TAG, "is in favs " + movieID);
                         isInFavsAlready = true;
                         favoriteToggle.setChecked(true);
                         favoriteToggle.setText(getString(R.string.addedToFavorites));
@@ -193,6 +257,17 @@ public class MovieDetailActivity extends AppCompatActivity {
         }
     }
 
+    private class ShowReviewsListener implements  CompoundButton.OnCheckedChangeListener{
+        @Override
+        public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+            if(isChecked == true){
+                showReviews();
+                isReviewButtonClicked = true;
+            }else if(isChecked == false){
+                isReviewButtonClicked = false;
+            }
+        }
+    }
 
     private class FetchReviewsAndTrailersTask extends AsyncTask<URL, Void, String[]> {
 
@@ -209,9 +284,7 @@ public class MovieDetailActivity extends AppCompatActivity {
                 Log.e("Main Activity", "Problem making the HTTP request.", e);
             }
             return new String[]{jsonVideoString, jsonReviewString};
-
         }
-
 
         @Override
         protected void onPostExecute(String[] jsonString) {
@@ -220,26 +293,18 @@ public class MovieDetailActivity extends AppCompatActivity {
             }
             mTrailers = JsonUtils.extractTrailersFromJson(jsonString[0]);
             mReviews = JsonUtils.extractReviewsFromJson(jsonString[1]);
-            populateReviews(mReviews, mTrailers);
+            populateReviewsAndTrailers(mReviews, mTrailers);
         }
     }
 
 
-    private void populateTrailers(List<Trailer> trailers){
-        if(trailers.isEmpty()){
-            return;
-        }
-        else{
 
-        }
-    }
-
-    private void populateReviews(List<Review> review, List<Trailer> trailers){
+    private void populateReviewsAndTrailers(List<Review> review, List<Trailer> trailers){
 
         if (review.isEmpty()) {
-            reviewLabel.setText(R.string.reviewLabelNone);
+            reviewSwitch.setText(R.string.reviewLabelNone);
         } else {
-            reviewLabel.setText(R.string.reviewLabelExist);
+            reviewSwitch.setText(R.string.reviewLabelExist);
             fakeView.setVisibility(View.GONE);
             mAdapter = new MovieReviewsRecyclerViewAdapter(MovieDetailActivity.this, mReviews);
             mReviewList.addItemDecoration(new DividerItemDecoration(getApplicationContext(), DividerItemDecoration.VERTICAL));

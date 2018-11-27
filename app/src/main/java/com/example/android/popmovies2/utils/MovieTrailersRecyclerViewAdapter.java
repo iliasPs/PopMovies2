@@ -79,9 +79,9 @@ public class MovieTrailersRecyclerViewAdapter extends RecyclerView.Adapter<Movie
             int position = this.getAdapterPosition();
             Trailer trailer = mTrailers.get(position);
             try{
-                TrailerUtils.launchTrailerVideoInYoutubeApp(context,trailer.getTrailerKey());
+                PopMoviesUtils.launchTrailerVideoInYoutubeApp(context,trailer.getTrailerKey());
             }catch (ActivityNotFoundException exception){
-                TrailerUtils.launchTrailerVideoInYoutubeBrowser(context, trailer.getTrailerKey());
+                PopMoviesUtils.launchTrailerVideoInYoutubeBrowser(context, trailer.getTrailerKey());
             }
         }
     }

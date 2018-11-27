@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -44,26 +45,37 @@ public class MainActivity extends AppCompatActivity {
     TextView noDataTv;
     @BindView(R.id.rv_movies)
     RecyclerView mMoviesList;
-
+    public static final String MOVIE_LIST = "instanceMovieList";
     private AppDatabase mDb;
 
+    private String savedList;
+    static int  currentScrollPosition = 0;
     private String userOption = "Most Popular";
     private List<Movie> mMovies;
     private MovieRecycleViewAdapter mAdapter;
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+
+        super.onSaveInstanceState(outState);
+    }
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+//        if (savedInstanceState != null){
+//            mMovies = JsonUtils.extractFeatureFromJson(savedList);
+//        }
 
         mToolBar = findViewById(R.id.toolbar);
 
         ButterKnife.bind(this);
         mToolBar.setTitle(getResources().getString(R.string.app_name));
 
-        ArrayAdapter<String> spinAdapter = new ArrayAdapter<String>(MainActivity.this,
-                R.layout.pref_spinner_item_list, getResources().getStringArray(R.array.userPrefs));
+        ArrayAdapter<String> spinAdapter = new ArrayAdapter<String>(MainActivity.this, R.layout.pref_spinner_item_list, getResources().getStringArray(R.array.userPrefs));
         spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         prefSpinner.setAdapter(spinAdapter);
 
@@ -91,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
         mMoviesList.setLayoutManager(gridLayoutManager);
         mMoviesList.setHasFixedSize(true);
+
     }
 
     private void setUpViewModel(){
@@ -105,14 +118,21 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onPause() {
 
-//    @Override
-//    public void onListItemClick(int clickedItemIndex) {
-//        Log.d(LOG_TAG, "click");
-//        Intent i = new Intent(MainActivity.this, MovieDetailActivity.class);
-//            i.putExtra(MovieDetailActivity.EXTRA_MOVIE, clickedItemIndex);
-//            startActivity(i);
-//    }
+        currentScrollPosition = ((LinearLayoutManager) mMoviesList.getLayoutManager()).findFirstVisibleItemPosition();
+
+        super.onPause();
+    }
+
+           @Override
+        protected void onResume() {
+            ((LinearLayoutManager) mMoviesList.getLayoutManager()).scrollToPosition(currentScrollPosition);
+            super.onResume();
+
+    }
+
 
     private class PopulateMoviesTask extends AsyncTask<URL, Void, String> {
 
@@ -120,11 +140,14 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(URL... urls) {
             URL searchMovieObjectUrl = NetworkUtils.createUrl(userOption);
             String jsonString = "";
+
             try {
                 jsonString = NetworkUtils.makeHttpRequest(searchMovieObjectUrl);
+                savedList = jsonString;
             } catch (IOException e) {
                 Log.e("Main Activity", "Problem making the HTTP request.", e);
             }
+
             return jsonString;
         }
 
@@ -139,9 +162,8 @@ public class MainActivity extends AppCompatActivity {
                 mMovies = JsonUtils.extractFeatureFromJson(jsonString);
             }
             mAdapter = new MovieRecycleViewAdapter(MainActivity.this, mMovies);
-           mMoviesList.setAdapter(mAdapter);
+            mMoviesList.setAdapter(mAdapter);
         }
     }
-
 
 }
