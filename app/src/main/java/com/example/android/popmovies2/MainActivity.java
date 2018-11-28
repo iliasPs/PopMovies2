@@ -20,7 +20,6 @@ import android.widget.Toolbar;
 
 import com.example.android.popmovies2.database.AppDatabase;
 import com.example.android.popmovies2.model.Movie;
-import com.example.android.popmovies2.model.MovieList;
 import com.example.android.popmovies2.utils.JsonUtils;
 import com.example.android.popmovies2.utils.MainViewModel;
 import com.example.android.popmovies2.utils.MovieRecycleViewAdapter;
@@ -38,6 +37,7 @@ import butterknife.ButterKnife;
 public class MainActivity extends AppCompatActivity {
 
     public static final String MOVIE_LIST = "instanceMovieList";
+    public static final String RECYCLER_VIEW_STATE_KEY = "RECYCLER_VIEW_STATE_KEY";
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     Context mContext;
     Toolbar mToolBar;
@@ -48,19 +48,21 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.rv_movies)
     RecyclerView mMoviesRV;
     private AppDatabase mDb;
-    private MovieList movieList;
     private String userOption = "Most Popular";
-    private List<Movie> mMoviesList;
+    private ArrayList<Movie> mMoviesList = new ArrayList<>();
     private MovieRecycleViewAdapter movieRecycleViewAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+    private Parcelable mListState;
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        if(mMoviesList !=null) {
-            outState.putParcelableArrayList(MOVIE_LIST, (ArrayList<? extends Parcelable>) mMoviesList);
+        if (mMoviesList != null) {
+            outState.putParcelableArrayList(MOVIE_LIST, mMoviesList);
+            mListState = mLayoutManager.onSaveInstanceState();
+            outState.putParcelable(RECYCLER_VIEW_STATE_KEY, mListState);
         }
         super.onSaveInstanceState(outState);
     }
-
 
 
     @Override
@@ -69,17 +71,24 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        if (savedInstanceState != null) {
-            if(savedInstanceState.containsKey(MOVIE_LIST))
-            mMoviesList = savedInstanceState.getParcelable(MOVIE_LIST);
 
-        }
-
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
+        mMoviesRV.setLayoutManager(gridLayoutManager);
+        mMoviesRV.setHasFixedSize(true);
         movieRecycleViewAdapter = new MovieRecycleViewAdapter(MainActivity.this, mMoviesList);
         mMoviesRV.setAdapter(movieRecycleViewAdapter);
 
-        mToolBar = findViewById(R.id.toolbar);
+        mLayoutManager = mMoviesRV.getLayoutManager();
 
+        if (savedInstanceState != null && savedInstanceState.containsKey(MOVIE_LIST)) {
+            ArrayList<Movie> savedMovieList = savedInstanceState.getParcelableArrayList(MOVIE_LIST);
+            Log.d(LOG_TAG, "getting movies from instance ");
+            mMoviesList.addAll(savedMovieList);
+            movieRecycleViewAdapter = new MovieRecycleViewAdapter(MainActivity.this, mMoviesList);
+            mMoviesRV.setAdapter(movieRecycleViewAdapter);
+        }
+
+        mToolBar = findViewById(R.id.toolbar);
 
         mToolBar.setTitle(getResources().getString(R.string.app_name));
 
@@ -95,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
                 if (userOption.contentEquals("Most Popular") || userOption.contentEquals("Highest Rated")) {
                     PopulateMoviesTask newTask = new PopulateMoviesTask();
                     newTask.execute();
+
+
                 } else {
                     setUpViewModel();
                 }
@@ -107,9 +118,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         mDb = AppDatabase.getInstance(getApplicationContext());
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
-        mMoviesRV.setLayoutManager(gridLayoutManager);
-        mMoviesRV.setHasFixedSize(true);
 
     }
 
@@ -124,7 +132,23 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
 
+        if (savedInstanceState != null) {
+            mMoviesList = savedInstanceState.getParcelableArrayList(MOVIE_LIST);
+            mListState = savedInstanceState.getParcelable(RECYCLER_VIEW_STATE_KEY);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mListState != null) {
+            mLayoutManager.onRestoreInstanceState(mListState);
+        }
+    }
 
     private class PopulateMoviesTask extends AsyncTask<URL, Void, String> {
 
@@ -151,8 +175,8 @@ public class MainActivity extends AppCompatActivity {
                 noDataTv.setVisibility(View.GONE);
                 mMoviesList = JsonUtils.extractFeatureFromJson(jsonString);
             }
-
+            movieRecycleViewAdapter = new MovieRecycleViewAdapter(MainActivity.this, mMoviesList);
+            mMoviesRV.setAdapter(movieRecycleViewAdapter);
         }
     }
-
 }
