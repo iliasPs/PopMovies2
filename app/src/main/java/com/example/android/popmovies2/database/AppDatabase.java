@@ -3,13 +3,16 @@ package com.example.android.popmovies2.database;
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
+import android.arch.persistence.room.TypeConverters;
 import android.content.Context;
 import android.util.Log;
 
 import com.example.android.popmovies2.model.Movie;
+import com.example.android.popmovies2.utils.Converters;
 
 
 @Database(entities = {Movie.class}, version =1, exportSchema = false)
+@TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
 
     private static final String LOG_TAG = AppDatabase.class.getSimpleName();

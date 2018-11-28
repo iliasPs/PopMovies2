@@ -59,6 +59,9 @@ public class MovieRecycleViewAdapter extends RecyclerView.Adapter<MovieRecycleVi
         return (null != mMovies ? mMovies.size() : 0);
     }
 
+    public List<Movie> getMovieList() { return this.mMovies; }
+
+
     /**
      * Cache of the children views for a list item.
      */

@@ -1,9 +1,16 @@
 package com.example.android.popmovies2.utils;
 
+import android.arch.persistence.room.TypeConverter;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 
 public class PopMoviesUtils {
 
@@ -19,6 +26,8 @@ public class PopMoviesUtils {
         Intent launchTrailerVideoInYoutube = new Intent(Intent.ACTION_VIEW, Uri.parse((BASE_URL_YOUTUBE + videoID)));
         context.startActivity(launchTrailerVideoInYoutube);
     }
+
+
 
 
 }

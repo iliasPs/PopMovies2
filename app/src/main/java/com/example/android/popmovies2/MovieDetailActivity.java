@@ -95,34 +95,27 @@ public class MovieDetailActivity extends AppCompatActivity {
         mToolbar = findViewById(R.id.toolbar);
         mToolbar.setTitle(R.string.movie_details_title);
         ButterKnife.bind(this);
-
         if (savedInstanceState != null && savedInstanceState.containsKey(INSTANCE_MOVIE_ID)) {
             mMovieId = savedInstanceState.getInt(INSTANCE_MOVIE_ID, DEFAULT_MOVIE_ID);
-
         }
         if(savedInstanceState !=null && savedInstanceState.containsKey(IS_IN_FAVORITES)){
             isInFavsAlready = savedInstanceState.getBoolean(IS_IN_FAVORITES, false);
         }
         if(savedInstanceState !=null && savedInstanceState.containsKey(REVIEW_BUTTON)){
             isReviewButtonClicked = savedInstanceState.getBoolean(REVIEW_BUTTON, false);
-
         }
         Log.d(LOG_TAG, "review button   " + isReviewButtonClicked);
 
-
         Intent i = getIntent();
-
         if (i != null && i.hasExtra(EXTRA_MOVIE)) {
             if (mMovieId == DEFAULT_MOVIE_ID) {
                 mMovieId = i.getIntExtra(EXTRA_MOVIE, DEFAULT_MOVIE_ID);
                 mMovie = i.getParcelableExtra(EXTRA_MOVIE);
                 populateUI(mMovie);
-
             }
         }
         setTrailers();
         setReviews();
-
 
         if (isReviewButtonClicked) {
             showReviews();
@@ -131,7 +124,6 @@ public class MovieDetailActivity extends AppCompatActivity {
         isMovieInFavorites(movieID);
         reviewSwitch.setOnCheckedChangeListener(new ShowReviewsListener());
         favoriteToggle.setOnCheckedChangeListener(new FavoriteListener());
-
     }
 
 //    public void SaveButtonState(String buttonState){
@@ -201,10 +193,9 @@ public class MovieDetailActivity extends AppCompatActivity {
         }else {
             isInFavsAlready = false;
         }
+        showReviews();
         super.onResume();
-
     }
-
 
     public void showReviews() {
         mReviewList.setHasFixedSize(true);
@@ -228,7 +219,6 @@ public class MovieDetailActivity extends AppCompatActivity {
                 }
         );
         return isInFavsAlready;
-
     }
 
     private class FavoriteListener implements CompoundButton.OnCheckedChangeListener {
@@ -253,7 +243,6 @@ public class MovieDetailActivity extends AppCompatActivity {
                     }
                 });
             }
-
         }
     }
 
@@ -285,7 +274,6 @@ public class MovieDetailActivity extends AppCompatActivity {
             }
             return new String[]{jsonVideoString, jsonReviewString};
         }
-
         @Override
         protected void onPostExecute(String[] jsonString) {
             if (jsonString == null) {
@@ -300,7 +288,6 @@ public class MovieDetailActivity extends AppCompatActivity {
 
 
     private void populateReviewsAndTrailers(List<Review> review, List<Trailer> trailers){
-
         if (review.isEmpty()) {
             reviewSwitch.setText(R.string.reviewLabelNone);
         } else {
@@ -311,7 +298,6 @@ public class MovieDetailActivity extends AppCompatActivity {
             mReviewList.setAdapter(mAdapter);
             mReviewList.setVisibility(View.GONE);
         }
-
         if(trailers.isEmpty()){
             trailersHeader.setText(R.string.trailersNA);
         }else{
