@@ -15,13 +15,23 @@ import com.example.android.popmovies2.R;
 import com.example.android.popmovies2.model.Movie;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MovieRecycleViewAdapter extends RecyclerView.Adapter<MovieRecycleViewAdapter.MoviesViewHolder>  {
 
     private List<Movie> mMovies;
 
+    public void swapData(ArrayList<Movie> movies)
+    {
+        if(movies == null || movies.size()==0)
+            return;
+        if (mMovies != null && mMovies.size()>0)
+            mMovies.clear();
+        mMovies.addAll(movies);
+        notifyDataSetChanged();
 
+    }
 
     private Context mContext;
 
@@ -59,8 +69,6 @@ public class MovieRecycleViewAdapter extends RecyclerView.Adapter<MovieRecycleVi
         return (null != mMovies ? mMovies.size() : 0);
     }
 
-    public List<Movie> getMovieList() { return this.mMovies; }
-
 
     /**
      * Cache of the children views for a list item.
@@ -87,9 +95,6 @@ public class MovieRecycleViewAdapter extends RecyclerView.Adapter<MovieRecycleVi
            Movie movie = mMovies.get(clickedPosition);
             i.putExtra(MovieDetailActivity.EXTRA_MOVIE, movie);
             context.startActivity(i);
-
-
-
         }
     }
 

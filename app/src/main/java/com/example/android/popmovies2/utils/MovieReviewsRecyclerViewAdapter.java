@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.example.android.popmovies2.R;
 import com.example.android.popmovies2.model.Review;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MovieReviewsRecyclerViewAdapter extends RecyclerView.Adapter<MovieReviewsRecyclerViewAdapter.ReviewsViewHolder> {
@@ -19,9 +20,23 @@ public class MovieReviewsRecyclerViewAdapter extends RecyclerView.Adapter<MovieR
     private Context mContext;
 
 
+
+
     public MovieReviewsRecyclerViewAdapter(Context c, List<Review> myMoviesReview){
         mContext = c;
         mReviews = myMoviesReview;
+    }
+
+
+    public void swapData(ArrayList<Review> reviews)
+    {
+        if(reviews == null || reviews.size()==0)
+            return;
+        if (mReviews != null && mReviews.size()>0)
+            mReviews.clear();
+        mReviews.addAll(reviews);
+        notifyDataSetChanged();
+
     }
 
     @NonNull

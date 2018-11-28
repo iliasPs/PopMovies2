@@ -16,6 +16,7 @@
     <string name="review_content">Review Content</string>
     <string name="reviewLabelExist"><u>User Reviews: (Click to expand)</u></string>
     <string name="reviewLabelNone">User Reviews: None yet...</string>
+    <string name="reviewLabelClose">Click to collapse</string>
     <string name="addFavorite">Add to favorites</string>
     <string name="removeFavorites">Remove from Favorites</string>
     <string name="addedToFavorites">Added to favorites</string>

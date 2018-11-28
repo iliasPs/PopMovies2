@@ -24,6 +24,7 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<Movie>> getMovies(){
+
         return movies;
     }
 

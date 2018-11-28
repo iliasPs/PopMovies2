@@ -14,6 +14,7 @@ import com.example.android.popmovies2.R;
 import com.example.android.popmovies2.model.Trailer;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -30,6 +31,17 @@ public class MovieTrailersRecyclerViewAdapter extends RecyclerView.Adapter<Movie
     public MovieTrailersRecyclerViewAdapter(Context c, List<Trailer> mTrailers){
         this.mTrailers= mTrailers;
         mContext = c;
+    }
+
+    public void swapData(ArrayList<Trailer> trailers)
+    {
+        if(trailers == null || trailers.size()==0)
+            return;
+        if (mTrailers != null && mTrailers.size()>0)
+            mTrailers.clear();
+        mTrailers.addAll(trailers);
+        notifyDataSetChanged();
+
     }
 
     @NonNull

@@ -6,7 +6,6 @@ import android.view.View;
 
 import com.example.android.popmovies2.model.Movie;
 import com.example.android.popmovies2.utils.JsonUtils;
-import com.example.android.popmovies2.utils.MovieRecycleViewAdapter;
 import com.example.android.popmovies2.utils.NetworkUtils;
 
 import java.io.IOException;
@@ -16,7 +15,7 @@ import java.util.ArrayList;
 class PopulateMoviesTask extends AsyncTask<URL, Void, String> {
 
     private MainActivity mainActivity;
-    public ArrayList<Movie> movieList;
+    private ArrayList<Movie> movieList;
 
     private static final String LOG_TAG = PopulateMoviesTask.class.getSimpleName();
 
@@ -48,7 +47,9 @@ class PopulateMoviesTask extends AsyncTask<URL, Void, String> {
             mainActivity.noDataTv.setVisibility(View.GONE);
             movieList = JsonUtils.extractFeatureFromJson(jsonString);
         }
-        mainActivity.movieRecycleViewAdapter = new MovieRecycleViewAdapter(mainActivity, movieList);
-        mainActivity.mMoviesRV.setAdapter(mainActivity.movieRecycleViewAdapter);
+
+
+        mainActivity.movieRecycleViewAdapter.swapData(movieList);
+
     }
 }
