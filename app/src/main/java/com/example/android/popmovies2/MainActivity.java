@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private AppDatabase mDb;
     public String userOption = "Most Popular";
     public ArrayList<Movie> mMoviesList = new ArrayList<>();
-    private MovieRecycleViewAdapter movieRecycleViewAdapter;
+    public MovieRecycleViewAdapter movieRecycleViewAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private Parcelable mListState;
 
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         mMoviesRV.setLayoutManager(gridLayoutManager);
         mMoviesRV.setHasFixedSize(true);
         movieRecycleViewAdapter = new MovieRecycleViewAdapter(MainActivity.this, mMoviesList);
-        mMoviesRV.setAdapter(movieRecycleViewAdapter);
+        mMoviesRV.swapAdapter(movieRecycleViewAdapter, true);
 
         mLayoutManager = mMoviesRV.getLayoutManager();
 
