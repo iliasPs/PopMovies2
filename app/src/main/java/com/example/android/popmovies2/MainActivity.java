@@ -3,7 +3,6 @@ package com.example.android.popmovies2;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -20,13 +19,9 @@ import android.widget.Toolbar;
 
 import com.example.android.popmovies2.database.AppDatabase;
 import com.example.android.popmovies2.model.Movie;
-import com.example.android.popmovies2.utils.JsonUtils;
 import com.example.android.popmovies2.utils.MainViewModel;
 import com.example.android.popmovies2.utils.MovieRecycleViewAdapter;
-import com.example.android.popmovies2.utils.NetworkUtils;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String MOVIE_LIST = "instanceMovieList";
     public static final String RECYCLER_VIEW_STATE_KEY = "RECYCLER_VIEW_STATE_KEY";
+    public static final String USER_OPTION_KEY = "user_option";
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     Context mContext;
     Toolbar mToolBar;
@@ -48,8 +44,8 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.rv_movies)
     RecyclerView mMoviesRV;
     private AppDatabase mDb;
-    private String userOption = "Most Popular";
-    private ArrayList<Movie> mMoviesList = new ArrayList<>();
+    public String userOption = "Most Popular";
+    public ArrayList<Movie> mMoviesList = new ArrayList<>();
     private MovieRecycleViewAdapter movieRecycleViewAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private Parcelable mListState;
@@ -60,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
             outState.putParcelableArrayList(MOVIE_LIST, mMoviesList);
             mListState = mLayoutManager.onSaveInstanceState();
             outState.putParcelable(RECYCLER_VIEW_STATE_KEY, mListState);
+            outState.putInt(USER_OPTION_KEY, prefSpinner.getSelectedItemPosition());
         }
         super.onSaveInstanceState(outState);
     }
@@ -72,6 +69,10 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
 
+        mToolBar = findViewById(R.id.toolbar);
+
+        mToolBar.setTitle(getResources().getString(R.string.app_name));
+
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
         mMoviesRV.setLayoutManager(gridLayoutManager);
         mMoviesRV.setHasFixedSize(true);
@@ -80,21 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
         mLayoutManager = mMoviesRV.getLayoutManager();
 
-        if (savedInstanceState != null && savedInstanceState.containsKey(MOVIE_LIST)) {
-            ArrayList<Movie> savedMovieList = savedInstanceState.getParcelableArrayList(MOVIE_LIST);
-            Log.d(LOG_TAG, "getting movies from instance ");
-            mMoviesList.addAll(savedMovieList);
-            movieRecycleViewAdapter = new MovieRecycleViewAdapter(MainActivity.this, mMoviesList);
-            mMoviesRV.setAdapter(movieRecycleViewAdapter);
-        }
-
-        mToolBar = findViewById(R.id.toolbar);
-
-        mToolBar.setTitle(getResources().getString(R.string.app_name));
-
-        ArrayAdapter<String> spinAdapter = new ArrayAdapter<String>(MainActivity.this, R.layout.pref_spinner_item_list, getResources().getStringArray(R.array.userPrefs));
-        spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        prefSpinner.setAdapter(spinAdapter);
+        setSpinner();
 
         prefSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -102,10 +89,8 @@ public class MainActivity extends AppCompatActivity {
                 userOption = prefSpinner.getSelectedItem().toString();
 
                 if (userOption.contentEquals("Most Popular") || userOption.contentEquals("Highest Rated")) {
-                    PopulateMoviesTask newTask = new PopulateMoviesTask();
+                    PopulateMoviesTask newTask = new PopulateMoviesTask(MainActivity.this);
                     newTask.execute();
-
-
                 } else {
                     setUpViewModel();
                 }
@@ -113,12 +98,34 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-                PopulateMoviesTask newTask = new PopulateMoviesTask();
-                newTask.execute();
+
             }
         });
-        mDb = AppDatabase.getInstance(getApplicationContext());
 
+        if (savedInstanceState != null && savedInstanceState.containsKey(MOVIE_LIST)) {
+            ArrayList<Movie> savedMovieList = savedInstanceState.getParcelableArrayList(MOVIE_LIST);
+            Log.d(LOG_TAG, "getting movies from instance ");
+            mMoviesList.addAll(savedMovieList);
+            movieRecycleViewAdapter = new MovieRecycleViewAdapter(MainActivity.this, mMoviesList);
+            mMoviesRV.setAdapter(movieRecycleViewAdapter);
+            int spinnerSelection = savedInstanceState.getInt(USER_OPTION_KEY);
+            prefSpinner.setSelection(spinnerSelection);
+        }else{
+            PopulateMoviesTask newTask = new PopulateMoviesTask(this);
+            newTask.execute();
+            movieRecycleViewAdapter = new MovieRecycleViewAdapter(MainActivity.this, mMoviesList);
+            mMoviesRV.setAdapter(movieRecycleViewAdapter);
+        }
+        mDb = AppDatabase.getInstance(getApplicationContext());
+    }
+
+    private void setSpinner() {
+        ArrayAdapter<String> spinAdapter = new ArrayAdapter<String>(MainActivity.this,
+                R.layout.pref_spinner_item_list,
+                getResources().getStringArray(R.array.userPrefs));
+
+        spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        prefSpinner.setAdapter(spinAdapter);
     }
 
     private void setUpViewModel() {
@@ -139,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState != null) {
             mMoviesList = savedInstanceState.getParcelableArrayList(MOVIE_LIST);
             mListState = savedInstanceState.getParcelable(RECYCLER_VIEW_STATE_KEY);
+
         }
     }
 
@@ -150,33 +158,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class PopulateMoviesTask extends AsyncTask<URL, Void, String> {
+    @Override
+    public void onPause() {
+        super.onPause();
+        mListState= mMoviesRV.getLayoutManager().onSaveInstanceState();
 
-        @Override
-        protected String doInBackground(URL... urls) {
-            URL searchMovieObjectUrl = NetworkUtils.createUrl(userOption);
-            String jsonString = "";
-
-            try {
-                jsonString = NetworkUtils.makeHttpRequest(searchMovieObjectUrl);
-            } catch (IOException e) {
-                Log.e("Main Activity", "Problem making the HTTP request.", e);
-            }
-            return jsonString;
-        }
-
-        @Override
-        protected void onPostExecute(String jsonString) {
-            if (jsonString == null) {
-                mMoviesRV.setVisibility(View.GONE);
-                noDataTv.setVisibility(View.VISIBLE);
-            } else {
-                mMoviesRV.setVisibility(View.VISIBLE);
-                noDataTv.setVisibility(View.GONE);
-                mMoviesList = JsonUtils.extractFeatureFromJson(jsonString);
-            }
-            movieRecycleViewAdapter = new MovieRecycleViewAdapter(MainActivity.this, mMoviesList);
-            mMoviesRV.setAdapter(movieRecycleViewAdapter);
-        }
     }
+
+
 }
