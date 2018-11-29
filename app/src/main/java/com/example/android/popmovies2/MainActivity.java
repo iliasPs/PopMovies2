@@ -121,11 +121,7 @@ public class MainActivity extends AppCompatActivity {
         prefSpinner.setAdapter(spinAdapter);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        setSpinner();
-    }
+
 
     private void setUpViewModel() {
         MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
